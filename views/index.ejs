@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDoList</title>
+    <link rel="stylesheet" href="styling/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="main-container">
+
+        <div class="heading">
+            <p>To-Do List</p>
+            <img width="28px" height="28px" src="images/writing.png" alt="book-icon">
+        </div>
+
+        <form class="text-container" method="post" action="/submit" autocomplete="off">
+            <input type="text" placeholder="Add your task" name="task" required>
+            <button type="submit">Add</button>
+        </form>
+
+        <% if (locals.set_of_tasks) { %>
+
+            <ul>
+                <% for( let i = 0; i < set_of_tasks.length; i++ ) { %>
+    
+                <div class="task">
+
+                        <label class="container">
+                            <input name="checkbox-btn" type="checkbox" value= "<%= set_of_tasks[i]._id %>" <%= set_of_tasks[i].checkbox_status ? "checked" : "" %>>
+                            <span class="checkmark"></span>
+                        </label>
+
+                        <li>
+                            <p> <%= set_of_tasks[i].name %> </p>
+                        </li>
+
+                        <img class="delete-btn"width="28px" height="28px" src="images/cross.png" alt="delete-btn" value= "<%= set_of_tasks[i]._id %>">
+                    
+                    </div>
+
+                <% } %>
+             </ul>
+
+        <% } %>
+
+    </div>
+
+    <script>
+    
+        var checkbox = document.querySelectorAll(".task input");
+        var task = document.querySelectorAll("li p");
+
+        //When the page is loaded or refreshed, appropriate stlye should be applied based on the checkbox status
+        for(let i = 0 ; i < checkbox.length ; i++){
+
+            if(checkbox[i].checked === true){
+                task[i].style.textDecoration = "line-through"
+            }
+
+            else{
+                task[i].style.textDecoration = "none";
+            }
+        }
+
+        for(let i = 0 ; i < checkbox.length ; i++){
+
+            checkbox[i].addEventListener("click" , (e) => {
+
+                //When the checkbox is clicked, appropriate stlye should be applied based on the checkbox status.
+                if(checkbox[i].checked === true){
+                    task[i].style.textDecoration = "line-through"
+                }
+
+                else{
+                    task[i].style.textDecoration = "none";
+                }
+
+                //To get the id of the checkbox clicked
+                var checkbox_id = checkbox[i].getAttribute("value");  
+                
+                //Sending the id of the checkbox clicked to backend
+                fetch("/update_checkbox", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+
+                        body: JSON.stringify({
+                            selected_checkbox_id : checkbox_id
+                        }),
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+
+            });
+        }
+        
+        var delete_button = document.querySelectorAll(".delete-btn");
+
+        for(let i = 0 ; i < delete_button.length ; i++){
+
+            delete_button[i].addEventListener("click" , () => {
+
+                //This will remove the task from frontend when the cross button is clicked. Basically, we are targeting the cross button of that task and on clicking it we are removing the parent element ( div class="task" ) 
+                event.target.parentElement.remove();
+            
+                //To get the id of the delete button clicked
+                var delete_button_id = delete_button[i].getAttribute("value");
+
+                //Sending the id of the delete button clicked to backend
+                fetch("/update_task", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+
+                        body: JSON.stringify({
+                            selected_deleted_button_id : delete_button_id
+                        }),
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                })
+        } 
+
+    </script>
+
+</body>
+</html>
